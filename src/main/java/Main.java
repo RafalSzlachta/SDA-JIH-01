@@ -33,14 +33,100 @@ public class Main {
 
     public static void getActorsWithId (MysqlDataSource ds,int id){
         try (Connection con = ds.getConnection()) {
+            PreparedStatement ps = con.prepareStatement("SELECT * from actor where actor_id=?"); // ? to tzw placeholder
+            ps.setInt(1, id); // tutaj ustawiamy place holder
+            ResultSet rs = ps.executeQuery(); // polecenie ktore cos zwraca
+            while (rs.next()) {
+                System.out.print(rs.getInt("actor_id") + " ");
+                System.out.print(rs.getString(2) + " ");
+                System.out.print(rs.getString(3) + " ");
+                System.out.println(rs.getString(4) + " ");
+            }
 
         } catch (SQLException e) {
                 e.printStackTrace();
         }
     }
 
+    public static void deleteTableMovies(DataSource ds)
+    {
+        try (Connection con = ds.getConnection()) {
+            Statement stmt = con.createStatement();
+            stmt.execute("Drop table if exists movies"); // za pomoca execute mozemy wykonywac zapytania ktore nic nie zwracaja
 
-        public static void main (String[]args) throws ClassNotFoundException {
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void createTableMovies(DataSource ds)
+    {
+        try (Connection con = ds.getConnection()) {
+            Statement stmt = con.createStatement();
+            stmt.execute("create table if not exists movies(" +
+                    "id int primary key auto_increment," +
+                    "title varchar(45)" +
+                    ")"
+            );
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void insertIntoMovies(DataSource ds)
+    {
+        try (Connection con = ds.getConnection()) {
+            Statement stmt = con.createStatement();
+            String insert1 = "Insert into movies(title) values ('Film1')";
+            String insert2 = "Insert into movies(title) values ('Film2')";
+            String insert3 = "Insert into movies(title) values ('Film3')";
+            stmt.execute(insert1);
+            stmt.execute(insert2);
+            stmt.execute(insert3);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void deleteFromMoviesFilmWithId(DataSource ds, int id)
+    {
+        try (Connection con = ds.getConnection()) {
+            PreparedStatement stmt = con.prepareStatement("Delete from movies where id=?");
+            stmt.setInt(1, id);
+            stmt.execute();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void switchRecord1And3(DataSource ds)
+    {
+        try (Connection con = ds.getConnection()) {
+            CallableStatement stmt = con.prepareCall("{call SwitchFilm1And3()}");
+            stmt.execute();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void switchRecord3And1Parameter(DataSource ds, int id1, int id2)
+    {
+        try (Connection con = ds.getConnection()) {
+            CallableStatement stmt = con.prepareCall("{call SwitchFilm3And1Parameter(?,?)}");
+            stmt.setInt(1, id1);
+            stmt.setInt(2, id2);
+            stmt.execute();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void main (String[]args) throws ClassNotFoundException {
 
 //        try {
 //            MysqlDataSource ds = new MysqlDataSource(); // tworzenie połączenia drugim sposobem przez DataSource
@@ -72,6 +158,14 @@ public class Main {
             ds.setUser(USER);
             ds.setPassword(PASSWORD);
 
-            returnAllActors(ds);
+            // returnAllActors(ds);
+            // getActorsWithId(ds, 3);
+//        deleteTableMovies(ds);
+//        createTableMovies(ds);
+//        insertIntoMovies(ds);
+//        deleteFromMoviesFilmWithId(ds, 2);
+
+        switchRecord3And1Parameter(ds, 1, 3);
+
         }
 }
